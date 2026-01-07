@@ -81,6 +81,10 @@ exports.chat = async(req, res) =>{
                 response : result.response
             });
          }
+         res.json({
+            success : true,
+            response : result.response,
+         })
     }catch (error){
         console.error('Chat Error:', error);
         res.status(500).json({
