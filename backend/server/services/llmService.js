@@ -1,24 +1,26 @@
 const {GoogleGenerativeAI} = require('@google/generative-ai');
 
 // Initialize the Gemini client with the API key from environment variables
-const genAI = new GoogleGenerativeAI(ProcessingInstruction.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 class LLMService {
     constructor(){
-        // use gemini pro model for text
-        this.model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+         // use gemini 1.5 flash model for text
+        this.model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash'});
     }
 
 
 async getTextResponse(userPrompt) {
     try{
+        console.log("Asking Gemini:", userPrompt);
         const result = await this.model.generateContent(userPrompt);
-        const response = await result.text();
+        const response = await result.response;
         const text = response.text();
 
         return{
             success : true,
-            response : text
+            question : userPrompt,
+            answer : text
         };
     } catch(error){
         console.error('Gemini API Error:', error);
@@ -84,7 +86,7 @@ async chatWithContext(messages){
 
         const lastMessage = messages[messages.length - 1];
         const result = await chat.sendMessage(lastMessage.content);
-        const reaponse = await result.response;
+        const response = await result.response;
 
         return{
             success : true,

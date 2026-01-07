@@ -18,6 +18,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.1",
     "multer": "^2.0.2",
+    "nodemon": "^3.1.11",
     "xlsx": "^0.18.5"
   }
 }

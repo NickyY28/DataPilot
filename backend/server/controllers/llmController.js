@@ -1,4 +1,3 @@
-const llmService = require('../services/llmService');
 const LLMService = require('../services/llmService');
 
 exports.askQuestion = async (req, res) =>{
@@ -10,7 +9,7 @@ exports.askQuestion = async (req, res) =>{
                 message : 'Question is required'
             });
         }
-        const result = await LLMService.askQuestion(question);
+    const result = await LLMService.getTextResponse(question);
         if(!result.success){
             return res.status(500).json({
                 success : false,
@@ -19,9 +18,9 @@ exports.askQuestion = async (req, res) =>{
             });
         }
         res.json({
-            success : true,
-            question : question,
-            answer : result.answer
+            success: result.success,
+            question: result.question,
+            answer: result.answer
         });
     } catch(error){
         console.error('Ask Question Error:', error);
@@ -42,7 +41,7 @@ exports.analyzeIntent = async (req, res)=>{
                 message : 'Command is required'
             });
         }
-        const result = await llmService.analyzeIntent(command);
+        const result = await LLMService.analyzeIntent(command);
         if(!result.success){
             return res.status(500).json({
                 success : false,
@@ -75,7 +74,7 @@ exports.chat = async(req, res) =>{
                 message : 'Messages array is required'
             });
          }
-         const result = await llmService.chatWithContext(messages);
+         const result = await LLMService.chatWithContext(messages);
          if(!result.success){
             return res.status(500).json({
                 success : false,
