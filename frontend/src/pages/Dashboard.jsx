@@ -11,6 +11,7 @@ import ActionButtons from '../components/ActionButtons';
 import StatisticsCard from '../components/StatisticsCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Alert from '../components/Alert';
+import { TableSkeleton, CardSkeleton } from '../components/LoadingSkeleton';
 import { 
   Database, 
   Columns, 
