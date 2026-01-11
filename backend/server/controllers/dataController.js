@@ -85,7 +85,7 @@ exports.uploadCSV = async (req, res) => {
         columnCount: parsedData.headers.length,
         headers: parsedData.headers,
         columnTypes: columnTypes,
-        preview: parsedData.data.slice(0, 5) // First 5 rows
+        preview: parsedData.data.slice(0, 100) // First 100 rows
       }
     });
 
