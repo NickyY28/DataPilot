@@ -11,13 +11,20 @@ import ActionButtons from '../components/ActionButtons';
 import StatisticsCard from '../components/StatisticsCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Alert from '../components/Alert';
-import { TableSkeleton, CardSkeleton } from '../components/LoadingSkeleton';
 import { 
   Database, 
   Columns, 
   AlertCircle, 
   CheckCircle 
 } from 'lucide-react';
+import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
+import KeyboardShortcutsPanel from '../components/KeyboardShortcutsPanel';
+import { TableSkeleton, CardSkeleton } from '../components/LoadingSkeleton';
+import DarkModeToggle from '../components/DarkModeToggle';
+import KeyboardShortcutsPanel from '../components/KeyboardShortcutsPanel';
+import DataValidation from '../components/DataValidation';
+import UndoRedoControls from '../components/UndoRedoControls';
+import { InfoTooltip } from '../components/Tooltip';
 
 const Dashboard = () => {
   const {
@@ -33,6 +40,43 @@ const Dashboard = () => {
   const [activeView, setActiveView] = useState('preview'); // 'preview', 'table', 'charts'
   const [alert, setAlert] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  useKeyboardShortcuts([
+    {
+      key: 's',
+      ctrlKey: true,
+      action: () => {
+        if (currentDataset) {
+          handleDownload();
+        }
+      }
+    },
+    {
+      key: 'f',
+      ctrlKey: true,
+      action: () => {
+        setSearchFocused(true);
+        // Focus search input
+        document.querySelector('input[type="search"]')?.focus();
+      }
+    },
+    {
+      key: 'k',
+      ctrlKey: true,
+      action: () => setShowShortcuts(true)
+    },
+    {
+      key: 'Escape',
+      action: () => {
+        setShowShortcuts(false);
+        // Close any open modals
+      }
+    },
+    { key: 's', ctrlKey: true, action: handleDownload },
+    { key: 'z', ctrlKey: true, action: undo },
+    { key: 'z', ctrlKey: true, shiftKey: true, action: redo },
+  ]);
 
   // Show alert with auto-dismiss
   const showAlert = (type, message, duration = 5000) => {
@@ -238,7 +282,53 @@ const handleRowDelete = (rowIndex) => {
 };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                InsightStream
+              </h1>
+              <InfoTooltip text="AI-powered data analysis platform" />
+            </div>
+            <div className="flex items-center gap-4">
+              {currentDataset && (
+                <UndoRedoControls
+                  onUndo={undo}
+                  onRedo={redo}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                />
+              )}
+              <DarkModeToggle />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {isUploading ? (
+          <>
+            <CardSkeleton />
+            <div className="mt-6">
+              <TableSkeleton />
+            </div>
+          </>
+        ) : !currentDataset ? (
+          <FileUpload onFileUpload={handleFileUpload} isUploading={isUploading} />
+        ) : (
+          <>
+            {/* Data Validation */}
+            <div className="mb-6">
+              <DataValidation
+                data={currentDataset.info.preview}
+                headers={currentDataset.info.headers}
+                columnTypes={currentDataset.info.columnTypes}
+              />
+            </div>
+            
+            <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -427,6 +517,12 @@ const handleRowDelete = (rowIndex) => {
           </p>
         </div>
       </footer>
+    </div>
+          </>
+        )}
+      </main>
+
+      <KeyboardShortcutsPanel />
     </div>
   );
 };
