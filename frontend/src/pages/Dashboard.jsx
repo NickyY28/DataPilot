@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import DataTable from '../components/DataTable';
+import ChartGenerator from '../components/ChartGenerator';
+import { Table as TableIcon, BarChart2 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { dataAPI } from '../services/api';
 import FileUpload from '../components/FileUpload';
@@ -26,7 +29,7 @@ const Dashboard = () => {
     isProcessing,
     setIsProcessing,
   } = useData();
-
+  const [activeView, setActiveView] = useState('preview'); // 'preview', 'table', 'charts'
   const [alert, setAlert] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -208,6 +211,31 @@ const Dashboard = () => {
     }
   };
 
+  // Handle data update from table edits
+const handleDataUpdate = (updatedData) => {
+  if (currentDataset) {
+    setCurrentDataset(prev => ({
+      ...prev,
+      info: {
+        ...prev.info,
+        preview: updatedData,
+      }
+    }));
+    showAlert('success', 'Data updated successfully');
+  }
+};
+
+// Handle column reorder
+const handleColumnReorder = (newColumnOrder) => {
+  console.log('Columns reordered:', newColumnOrder);
+  showAlert('info', 'Columns reordered');
+};
+
+// Handle row delete
+const handleRowDelete = (rowIndex) => {
+  showAlert('success', `Row ${rowIndex + 1} deleted`);
+};
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -306,29 +334,89 @@ const Dashboard = () => {
             />
 
             {/* Main Grid: Data Preview & Chat */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Data Preview */}
-              <div className="lg:col-span-1">
-                <DataPreview
-                  data={currentDataset.info}
-                  fileName={currentDataset.info.fileName}
-                  rowCount={currentDataset.info.rowCount}
-                  columnCount={currentDataset.info.columnCount}
-                />
-              </div>
+            {/* View Tabs */}
+          <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <div className="flex gap-2">
+          <button
+            onClick={() => setActiveView('preview')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+            activeView === 'preview'
+            ? 'bg-primary-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+          >
+          <TableIcon className="w-4 h-4" />
+            Preview
+          </button>
+          <button
+          onClick={() => setActiveView('table')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+          activeView === 'table'
+          ? 'bg-primary-600 text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+           }`}
+           >
+          <TableIcon className="w-4 h-4" />
+           Full Data Table
+          </button>
+         <button
+           onClick={() => setActiveView('charts')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+           activeView === 'charts'
+          ? 'bg-primary-600 text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+           >
+          <BarChart2 className="w-4 h-4" />
+          Charts & Insights
+        </button>
+        </div>
+      </div>
 
-              {/* Chat Interface */}
-              <div className="lg:col-span-1">
-                <ChatInterface
-                  onSendMessage={handleSendMessage}
-                  messages={chatHistory}
-                  isLoading={isProcessing}
-                />
-              </div>
-            </div>
-          </div>
+           {/* Content Area */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+           {/* Main Content - 2/3 width */}
+            <div className="lg:col-span-2">
+               {activeView === 'preview' && (
+             <DataPreview
+               data={currentDataset.info}
+               fileName={currentDataset.info.fileName}
+               rowCount={currentDataset.info.rowCount}
+              columnCount={currentDataset.info.columnCount}
+            />
+          )}
+    
+    {activeView === 'table' && (
+      <DataTable
+        data={currentDataset.info.preview}
+        headers={currentDataset.info.headers}
+        onDataUpdate={handleDataUpdate}
+        onColumnReorder={handleColumnReorder}
+        onRowDelete={handleRowDelete}
+      />
+    )}
+    
+    {activeView === 'charts' && (
+      <ChartGenerator
+        data={currentDataset.info.preview}
+        headers={currentDataset.info.headers}
+        columnTypes={currentDataset.info.columnTypes}
+        />
+         )}
+      </div>
+
+        {/* Chat Interface - 1/3 width */}
+        <div className="lg:col-span-1">
+        <ChatInterface
+         onSendMessage={handleSendMessage}
+        messages={chatHistory}
+        isLoading={isProcessing}
+        />
+        </div>
+      </div>
+    </div>
         )}
-      </main>
+  </main>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-12">
