@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Bot, User } from 'lucide-react';
+import AIChartComponent from './AIChartComponent';
 
 const ChatInterface = ({ onSendMessage, messages, isLoading }) => {
   const [input, setInput] = useState('');
@@ -66,9 +67,8 @@ const ChatInterface = ({ onSendMessage, messages, isLoading }) => {
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex gap-3 ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
+                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
               >
                 {message.role === 'assistant' && (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
@@ -76,13 +76,20 @@ const ChatInterface = ({ onSendMessage, messages, isLoading }) => {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === 'user'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
+                  className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-900'
+                    }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+
+                  {/* Render Chart if present */}
+                  {message.chartConfig && (
+                    <div className="mt-3 w-full bg-white rounded p-2">
+                      <AIChartComponent chartConfig={message.chartConfig} />
+                    </div>
+                  )}
+
                 </div>
                 {message.role === 'user' && (
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
@@ -113,7 +120,7 @@ const ChatInterface = ({ onSendMessage, messages, isLoading }) => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question or give a command..."
+            placeholder="Ask a question or give a command (e.g., 'Show me a bar chart of sales')..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             disabled={isLoading}
           />

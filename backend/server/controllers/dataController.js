@@ -8,10 +8,10 @@ const dataStore = new Map();
 // Helper function to normalize operation names
 const normalizeOperation = (operation) => {
   if (!operation) return 'unknown';
-  
+
   // Convert to lowercase and replace spaces with underscores
   const normalized = operation.toLowerCase().trim().replace(/\s+/g, '_');
-  
+
   // Map variations to standard names
   const operationMap = {
     'clean': 'clean',
@@ -35,7 +35,7 @@ const normalizeOperation = (operation) => {
     'statistics': 'analyze',
     'show_stats': 'analyze'
   };
-  
+
   return operationMap[normalized] || normalized;
 };
 
@@ -52,7 +52,7 @@ exports.uploadCSV = async (req, res) => {
 
     // Parse CSV
     const parsedData = await dataProcessingService.parseCSV(req.file.path);
-    
+
     // Detect column types
     const columnTypes = dataProcessingService.detectColumnTypes(
       parsedData.data,
@@ -61,7 +61,7 @@ exports.uploadCSV = async (req, res) => {
 
     // Generate unique ID for this dataset
     const dataId = Date.now().toString();
-    
+
     // Store data
     dataStore.set(dataId, {
       originalData: parsedData.data,
@@ -91,7 +91,7 @@ exports.uploadCSV = async (req, res) => {
 
   } catch (error) {
     console.error('Upload Error:', error);
-    
+
     // Clean up file if error occurs
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
@@ -159,81 +159,81 @@ exports.processCommand = async (req, res) => {
       case 'clean':
         // Full cleaning pipeline
         console.log('🧹 Starting full data cleaning...');
-        
+
         const dupResult = dataProcessingService.removeDuplicates(dataset.currentData);
-    console.log(`   ✓ Removed ${dupResult.duplicatesRemoved} duplicates`);
-    
-    const missingResult = dataProcessingService.handleMissingValues(
-      dupResult.data,
-      dataset.headers,
-      'remove'
-    );
-    console.log(`   ✓ Removed ${missingResult.changes.rowsRemoved} rows with missing values`);
-    
-    const formatResult = dataProcessingService.standardizeFormats(
-      missingResult.data,
-      dataset.headers
-    );
-    console.log(`   ✓ Standardized ${formatResult.changes.length} columns`);
-    
-    result = formatResult;
-    operations = [
-      { type: 'remove_duplicates', details: { removed: dupResult.duplicatesRemoved } },
-      { type: 'handle_missing', details: missingResult.changes },
-      { type: 'standardize_formats', details: { columnsAffected: formatResult.changes } }
-    ];
-    break;
+        console.log(`   ✓ Removed ${dupResult.duplicatesRemoved} duplicates`);
 
-  case 'remove_duplicates':
-    console.log('🔍 Removing duplicates...');
-    result = dataProcessingService.removeDuplicates(dataset.currentData);
-    operations = [{ type: 'remove_duplicates', details: { removed: result.duplicatesRemoved } }];
-    console.log(`   ✓ Removed ${result.duplicatesRemoved} duplicates`);
-    break;
+        const missingResult = dataProcessingService.handleMissingValues(
+          dupResult.data,
+          dataset.headers,
+          'remove'
+        );
+        console.log(`   ✓ Removed ${missingResult.changes.rowsRemoved} rows with missing values`);
 
-  case 'fill_missing':
-    console.log('📝 Filling missing values...');
-    result = dataProcessingService.handleMissingValues(
-      dataset.currentData,
-      dataset.headers,
-      'fill'
-    );
-    operations = [{ type: 'fill_missing', details: result.changes }];
-    console.log(`   ✓ Filled ${result.changes.valuesFilled} missing values`);
-    break;
+        const formatResult = dataProcessingService.standardizeFormats(
+          missingResult.data,
+          dataset.headers
+        );
+        console.log(`   ✓ Standardized ${formatResult.changes.length} columns`);
 
-  case 'remove_outliers':
-    console.log('📊 Removing outliers...');
-    result = dataProcessingService.removeOutliers(dataset.currentData, dataset.headers);
-    operations = [{ type: 'remove_outliers', details: result }];
-    console.log(`   ✓ Removed ${result.outliersRemoved} outliers`);
-    break;
+        result = formatResult;
+        operations = [
+          { type: 'remove_duplicates', details: { removed: dupResult.duplicatesRemoved } },
+          { type: 'handle_missing', details: missingResult.changes },
+          { type: 'standardize_formats', details: { columnsAffected: formatResult.changes } }
+        ];
+        break;
 
-  case 'standardize':
-    console.log('✨ Standardizing formats...');
-    result = dataProcessingService.standardizeFormats(dataset.currentData, dataset.headers);
-    operations = [{ type: 'standardize_formats', details: { columnsAffected: result.changes } }];
-    console.log(`   ✓ Standardized ${result.changes.length} columns`);
-    break;
+      case 'remove_duplicates':
+        console.log('🔍 Removing duplicates...');
+        result = dataProcessingService.removeDuplicates(dataset.currentData);
+        operations = [{ type: 'remove_duplicates', details: { removed: result.duplicatesRemoved } }];
+        console.log(`   ✓ Removed ${result.duplicatesRemoved} duplicates`);
+        break;
 
-  case 'analyze':
-    console.log('📈 Analyzing data...');
-    const stats = dataProcessingService.getStatistics(dataset.currentData, dataset.headers);
-    return res.json({
-      success: true,
-      operation: 'analyze',
-      statistics: stats,
-      preview: dataset.currentData.slice(0, 10)
-    });
+      case 'fill_missing':
+        console.log('📝 Filling missing values...');
+        result = dataProcessingService.handleMissingValues(
+          dataset.currentData,
+          dataset.headers,
+          'fill'
+        );
+        operations = [{ type: 'fill_missing', details: result.changes }];
+        console.log(`   ✓ Filled ${result.changes.valuesFilled} missing values`);
+        break;
 
-  default:
-    console.log('❌ Unknown operation:', operation);
-    console.log('💡 Supported operations: clean, remove_duplicates, fill_missing, remove_outliers, standardize, analyze');
-    return res.status(400).json({
-      success: false,
-      message: `Unknown operation: "${operation}". Supported operations: clean, remove_duplicates, fill_missing, remove_outliers, standardize, analyze`
-    });
-}
+      case 'remove_outliers':
+        console.log('📊 Removing outliers...');
+        result = dataProcessingService.removeOutliers(dataset.currentData, dataset.headers);
+        operations = [{ type: 'remove_outliers', details: result }];
+        console.log(`   ✓ Removed ${result.outliersRemoved} outliers`);
+        break;
+
+      case 'standardize':
+        console.log('✨ Standardizing formats...');
+        result = dataProcessingService.standardizeFormats(dataset.currentData, dataset.headers);
+        operations = [{ type: 'standardize_formats', details: { columnsAffected: result.changes } }];
+        console.log(`   ✓ Standardized ${result.changes.length} columns`);
+        break;
+
+      case 'analyze':
+        console.log('📈 Analyzing data...');
+        const stats = dataProcessingService.getStatistics(dataset.currentData, dataset.headers);
+        return res.json({
+          success: true,
+          operation: 'analyze',
+          statistics: stats,
+          preview: dataset.currentData.slice(0, 10)
+        });
+
+      default:
+        console.log('❌ Unknown operation:', operation);
+        console.log('💡 Supported operations: clean, remove_duplicates, fill_missing, remove_outliers, standardize, analyze');
+        return res.status(400).json({
+          success: false,
+          message: `Unknown operation: "${operation}". Supported operations: clean, remove_duplicates, fill_missing, remove_outliers, standardize, analyze`
+        });
+    }
 
     // Update dataset
     dataset.currentData = result.data;
@@ -413,6 +413,48 @@ exports.askQuestion = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error answering question',
+      error: error.message
+    });
+  }
+};
+
+exports.generateChart = async (req, res) => {
+  try {
+    const { dataId, question } = req.body;
+
+    if (!dataId || !question) {
+      return res.status(400).json({
+        success: false,
+        message: 'dataId and question are required'
+      });
+    }
+
+    const dataset = dataStore.get(dataId);
+    if (!dataset) {
+      return res.status(404).json({
+        success: false,
+        message: 'Dataset not found'
+      });
+    }
+
+    console.log('📊 Generating chart for:', question);
+
+    const chartConfig = await llmService.generateChartConfig(question, {
+      columns: dataset.headers,
+      columnTypes: dataset.columnTypes,
+      sampleData: dataset.currentData.slice(0, 10)
+    });
+
+    if (chartConfig) {
+      res.json({ success: true, chart: chartConfig });
+    } else {
+      res.status(500).json({ success: false, message: "Could not generate chart configuration" });
+    }
+  } catch (error) {
+    console.error('❌ Generate Chart Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating chart',
       error: error.message
     });
   }

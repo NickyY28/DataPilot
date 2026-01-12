@@ -16,7 +16,7 @@ export const dataAPI = {
   uploadCSV: async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const response = await api.post('/data/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -43,6 +43,15 @@ export const dataAPI = {
     return response.data;
   },
 
+  // Generate chart
+  generateChart: async (dataId, question) => {
+    const response = await api.post('/data/chart', {
+      dataId,
+      question,
+    });
+    return response.data;
+  },
+
   // Get insights
   getInsights: async (dataId) => {
     const response = await api.post('/data/insights', {
@@ -56,7 +65,7 @@ export const dataAPI = {
     const response = await api.get(`/data/download/${dataId}`, {
       responseType: 'blob',
     });
-    
+
     // Create download link
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
@@ -65,7 +74,7 @@ export const dataAPI = {
     document.body.appendChild(link);
     link.click();
     link.remove();
-    
+
     return true;
   },
 };

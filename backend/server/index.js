@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 
@@ -18,7 +19,7 @@ app.use('/api/data', dataRoutes);
 
 // Test route
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     message: 'Excel AI Assistant API is running',
     version: '1.0.0'
@@ -31,7 +32,7 @@ app.use((req, res) => {
     success: false,
     message: 'Route not found'
   });
-}); 
+});
 
 // Error handling
 app.use((err, req, res, next) => {

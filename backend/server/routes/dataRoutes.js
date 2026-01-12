@@ -11,6 +11,8 @@ router.post('/insights', dataController.getInsights);
 
 router.post('/ask', dataController.askQuestion);
 
+router.post('/chart', dataController.generateChart);
+
 router.get('/download/:dataId', dataController.downloadData);
 
 module.exports = router;
