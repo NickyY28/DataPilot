@@ -1,18 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 // Create axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Add interceptor to include token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -24,11 +24,11 @@ export const dataAPI = {
   // Upload CSV file
   uploadCSV: async (file) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const response = await api.post('/data/upload', formData, {
+    const response = await api.post("/data/upload", formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
@@ -36,7 +36,7 @@ export const dataAPI = {
 
   // Process command (clean, remove duplicates, etc.)
   processCommand: async (dataId, command) => {
-    const response = await api.post('/data/process', {
+    const response = await api.post("/data/process", {
       dataId,
       command,
     });
@@ -45,7 +45,7 @@ export const dataAPI = {
 
   // Ask question about dataset
   askQuestion: async (dataId, question) => {
-    const response = await api.post('/data/ask', {
+    const response = await api.post("/data/ask", {
       dataId,
       question,
     });
@@ -54,7 +54,7 @@ export const dataAPI = {
 
   // Generate chart
   generateChart: async (dataId, question) => {
-    const response = await api.post('/data/chart', {
+    const response = await api.post("/data/chart", {
       dataId,
       question,
     });
@@ -63,7 +63,7 @@ export const dataAPI = {
 
   // Get insights
   getInsights: async (dataId) => {
-    const response = await api.post('/data/insights', {
+    const response = await api.post("/data/insights", {
       dataId,
     });
     return response.data;
@@ -71,7 +71,7 @@ export const dataAPI = {
 
   // Get User History
   getHistory: async () => {
-    const response = await api.get('/data/history');
+    const response = await api.get("/data/history");
     return response.data;
   },
 
@@ -84,14 +84,14 @@ export const dataAPI = {
   // Download cleaned data
   downloadData: async (dataId, fileName) => {
     const response = await api.get(`/data/download/${dataId}`, {
-      responseType: 'blob',
+      responseType: "blob",
     });
 
     // Create download link
     const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', fileName || 'cleaned_data.csv');
+    link.setAttribute("download", fileName || "cleaned_data.csv");
     document.body.appendChild(link);
     link.click();
     link.remove();
