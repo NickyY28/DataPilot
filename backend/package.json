@@ -5,10 +5,10 @@
   "license": "ISC",
   "author": "Nicky",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "server/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx nodemon index.js"
+    "dev": "nodemon server/index.js",
+    "start": "node server/index.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -22,8 +22,10 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.1",
     "multer": "^2.0.2",
-    "nodemon": "^3.1.11",
     "papaparse": "^5.5.3",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
